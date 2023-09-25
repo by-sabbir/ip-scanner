@@ -10,7 +10,7 @@ import (
 	"golang.org/x/net/ipv4"
 )
 
-func ping() (bool, error) {
+func Ping() (bool, error) {
 	targetIp := "192.168.0.1"
 	destAddr, err := net.ResolveIPAddr("ip", targetIp)
 
