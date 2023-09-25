@@ -10,9 +10,9 @@ import (
 	"golang.org/x/net/ipv4"
 )
 
-func Ping() (bool, error) {
-	targetIp := "192.168.0.1"
-	destAddr, err := net.ResolveIPAddr("ip", targetIp)
+func Ping(targetIp net.IP) (bool, error) {
+
+	destAddr, err := net.ResolveIPAddr("ip", targetIp.String())
 
 	if err != nil {
 		slog.Error("error parsing ip: ", err)
@@ -76,6 +76,6 @@ func Ping() (bool, error) {
 		return true, nil
 	default:
 		slog.Info("Received ICMP message of type: ", replyMsg.Type)
-		return true, nil
+		return false, nil
 	}
 }

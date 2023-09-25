@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/by-sabbir/ip-scanner/ping"
 	"golang.org/x/exp/slog"
 )
 
 func main() {
-	cidr := "192.168.0.0/28"
+	cidr := "192.168.0.0/30"
 
 	ip, netmask, err := net.ParseCIDR(cidr)
 
@@ -20,13 +21,28 @@ func main() {
 	fmt.Println("ip: ", ip)
 
 	nextIp := ip
+	aliveIps := []net.IP{}
 	for {
 		nextIp = getNextIP(nextIp, 1)
 		fmt.Println("next ip: ", nextIp)
+		alive, err := ping.Ping(nextIp)
+
+		if err != nil {
+			slog.Error(err.Error())
+		}
+
+		if alive {
+			aliveIps = append(aliveIps, nextIp)
+		}
+
 		if !netmask.Contains(nextIp) {
 			break
 		}
 	}
+
+	fmt.Println("=============================")
+	fmt.Println(aliveIps)
+
 }
 
 func getNextIP(ip net.IP, inc uint) net.IP {
