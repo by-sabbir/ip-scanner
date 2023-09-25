@@ -21,27 +21,34 @@ func main() {
 	fmt.Println("ip: ", ip)
 
 	nextIp := ip
-	aliveIps := []net.IP{}
+	aliveHosts := []ping.Status{}
+
+	statusCh := make(chan ping.Status)
+	count := 0
 	for {
-		nextIp = getNextIP(nextIp, 1)
-		fmt.Println("next ip: ", nextIp)
-		alive, err := ping.Ping(nextIp)
+		count++
 
-		if err != nil {
-			slog.Error(err.Error())
-		}
+		go func() {
+			nextIp = getNextIP(nextIp, 1)
+			fmt.Println("next ip: ", nextIp)
 
-		if alive {
-			aliveIps = append(aliveIps, nextIp)
-		}
+			hostStatus, _ := ping.Ping(nextIp)
+			statusCh <- hostStatus
+		}()
 
 		if !netmask.Contains(nextIp) {
 			break
 		}
 	}
 
+	for i := 0; i < count; i++ {
+		fmt.Println("status: ", <-statusCh)
+	}
+
+	close(statusCh)
+
 	fmt.Println("=============================")
-	fmt.Println(aliveIps)
+	fmt.Println(aliveHosts)
 
 }
 
